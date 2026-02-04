@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
+    id "com.diffplug.spotless" version "${spotlessVersion}"
+}
+
+group = 'pl.zkotlowski'
+version = "${appVersion}"
+description = 'bank-transaction-analyzer'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of("${javaVersion}")
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter-webmvc"
+    implementation "org.apache.commons:commons-csv:1.14.1"
+    implementation "org.springframework.boot:spring-boot-starter-data-mongodb"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitVersion}"
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('bootRun') {
+    systemProperty "spring.profiles.active", "local"
+}
+
+spotless {
+    // Format Java source files
+    java {
+        googleJavaFormat('1.17.0').aosp() // Use AOSP style for more readable format
+        target 'src/**/*.java'
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+        forbidWildcardImports()
+    }
+
+    // Format other file types
+    format 'misc', {
+        target '*.gradle', '*.md', '.gitignore'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}

@@ -1,0 +1,19 @@
+# Ignore build artifacts and Gradle cache
+build/
+.gradle/
+
+# IDE files
+*.iml
+.idea/
+.vscode/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Keep gradle wrapper and scripts
+!gradlew
+!gradle/
+
+# Other
+target/

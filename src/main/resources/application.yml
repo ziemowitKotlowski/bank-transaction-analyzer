@@ -1,0 +1,12 @@
+spring:
+  config:
+    import: optional:configtree:secrets/credentials/
+  application:
+    name: bank-transaction-analyzer
+  servlet:
+    multipart:
+      max-file-size: 8MB # Hard-coded limit for around 100k valid transactions
+      max-request-size: 11MB
+
+mongodb:
+  uri: ${MONGO_DB_URI}
