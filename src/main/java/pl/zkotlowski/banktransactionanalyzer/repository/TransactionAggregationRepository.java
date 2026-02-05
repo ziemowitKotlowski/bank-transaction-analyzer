@@ -27,7 +27,7 @@ public class TransactionAggregationRepository {
                         Aggregation.match(
                                 Criteria.where("amount").lt(0).and("currency").is(currency)),
                         Aggregation.group("category").sum("amount").as("totalSpent"),
-                        Aggregation.project("totalSpent").and("_id").as("category"),
+                        Aggregation.project("totalSpent").and("_id").as("attribute"),
                         Aggregation.sort(ASC, "totalSpent"),
                         Aggregation.limit(topN));
         return mongoTemplate

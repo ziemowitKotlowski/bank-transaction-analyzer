@@ -66,7 +66,7 @@ This is the intended way to run the application with all dependencies.
 
 ## API Endpoints
 
-Once the application is running, you can use the postman collection to call those requests:
+Once the application is running, you can use the [open-api collection](./doc/open-api-collection.json) to call those requests:
 
 ### Import Transactions
 Use the sample data or generate your own using Mockaroo (see below) to test the import endpoint.
@@ -80,7 +80,7 @@ Content-Type: multipart/form-data
 GET http://localhost:8080/api/imports/{importJobId}/status
 ```
 
-### Transaction and Stats Endpoints
+### Statistics/Aggregations Endpoints
 #### Most spent per attribute
 Implemented filterBy options: YEAR_MONTH, CATEGORY
 ```
