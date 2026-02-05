@@ -2,6 +2,7 @@ package pl.zkotlowski.banktransactionanalyzer.repository;
 
 import static org.springframework.data.domain.Sort.Direction.ASC;
 
+import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -56,6 +57,41 @@ public class TransactionAggregationRepository {
         return mongoTemplate
                 .aggregate(aggregation, TransactionDocument.class, TopSpentBy.class)
                 .getMappedResults();
+    }
+
+    public BalanceByAttribute aggregateBalanceByYearMonth(YearMonth yearMonth, String currency) {
+        var aggregation =
+                Aggregation.newAggregation(
+                        Aggregation.match(Criteria.where("currency").is(currency)),
+                        Aggregation.project("amount", "currency")
+                                .and("date")
+                                .extractYear()
+                                .as("year")
+                                .and("date")
+                                .extractMonth()
+                                .as("month"),
+                        Aggregation.match(
+                                Criteria.where("year")
+                                        .is(yearMonth.getYear())
+                                        .and("month")
+                                        .is(yearMonth.getMonthValue())),
+                        Aggregation.group()
+                                .sum(
+                                        ConditionalOperators.Cond.when(
+                                                        ComparisonOperators.Lt.valueOf("amount")
+                                                                .lessThanValue(0))
+                                                .then("$amount")
+                                                .otherwise(0))
+                                .as("expenses")
+                                .sum(
+                                        ConditionalOperators.when(Criteria.where("amount").gte(0))
+                                                .then("$amount")
+                                                .otherwise(0))
+                                .as("income"));
+
+        return mongoTemplate
+                .aggregate(aggregation, TransactionDocument.class, BalanceByAttribute.class)
+                .getUniqueMappedResult();
     }
 
     public BalanceByAttribute aggregateBalanceByIban(String iban, String currency) {

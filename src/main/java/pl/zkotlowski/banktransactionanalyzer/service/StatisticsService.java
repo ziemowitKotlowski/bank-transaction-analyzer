@@ -1,5 +1,6 @@
 package pl.zkotlowski.banktransactionanalyzer.service;
 
+import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +34,22 @@ public class StatisticsService {
 
     public BalanceByAttribute getBalanceByAttribute(
             TransactionFilterByAttribute attribute, String value, String currency) {
-        switch (attribute) {
-            case IBAN -> {
-                return getBalanceByIban(value, currency);
+        try {
+            switch (attribute) {
+                case IBAN -> {
+                    return getBalanceByIban(value, currency);
+                }
+                case YEAR_MONTH -> {
+                    return getBalanceByYearMonth(value, currency);
+                }
+                case CATEGORY, DATE, CURRENCY -> throw new FeatureNotImplementedException();
+                default -> throw new IllegalArgumentException(
+                        String.format("Invalid attribute to get balance by: %s", attribute));
             }
-            case CATEGORY, YEAR_MONTH, DATE, CURRENCY -> throw new FeatureNotImplementedException();
-            default -> throw new IllegalArgumentException(
-                    String.format("Invalid attribute to get balance by: %s", attribute));
+        } catch (Exception e) {
+            log.error("Error getting balance by attribute {}: {}", attribute, e.getMessage());
+            throw e;
+            // todo: missing proper exception handling, for now pass the exception upstream
         }
     }
 
@@ -49,6 +59,11 @@ public class StatisticsService {
 
     private List<TopSpentBy> getTopYearMonthSpendAggregation(int topN, String currency) {
         return transactionAggregationRepository.aggregateTopSpentYearMonth(topN, currency);
+    }
+
+    private BalanceByAttribute getBalanceByYearMonth(String rawYearMonth, String currency) {
+        var yearMonth = YearMonth.parse(rawYearMonth);
+        return transactionAggregationRepository.aggregateBalanceByYearMonth(yearMonth, currency);
     }
 
     private BalanceByAttribute getBalanceByIban(String iban, String currency) {
